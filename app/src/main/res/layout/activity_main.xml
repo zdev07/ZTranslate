@@ -9,6 +9,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <ImageButton
+        android:id="@+id/galleryButton"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_gallery"
+        android:contentDescription="Open Gallery"
+        android:tint="#FFFFFF" />
+
     <TextView
         android:id="@+id/translatedText"
         android:layout_width="match_parent"
