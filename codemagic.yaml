@@ -3,22 +3,22 @@ workflows:
     name: Z Translate Build
     max_build_duration: 30
     environment:
-      # Removed 'android_sdk' as it is handled automatically by Codemagic
       java: 17
     triggering:
       events:
         - push
-        scripts:
+    # The 'scripts' section must be at the same level as 'triggering'
+    scripts:
       - name: Build Android APK
         script: |
-          # Use system gradle instead of the missing wrapper
-          gradle assembleDebug
-      - name: Generate Wrapper and Build
-        script: |
-          gradle wrapper --gradle-version 8.1.1
-          chmod +x gradlew
-          ./gradlew assembleDebug
-
+          # Check if gradlew exists, if not, use system gradle
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            echo "Gradle wrapper not found, using system gradle..."
+            gradle assembleDebug
+          fi
     artifacts:
       - app/build/outputs/apk/**/*.apk
     publishing:
