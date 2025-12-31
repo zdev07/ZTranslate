@@ -10,6 +10,7 @@ import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView; // Added this import
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -31,12 +32,15 @@ public class MainActivity extends AppCompatActivity {
     private TextView translatedTextView;
     private TextRecognizer textRecognizer;
     private LanguageIdentifier languageIdentifier;
+    private PreviewView viewFinder; // Created reference
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
         translatedTextView = findViewById(R.id.translatedText);
+        viewFinder = findViewById(R.id.viewFinder); // Initialized reference
         
         textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         languageIdentifier = LanguageIdentification.getClient();
@@ -55,7 +59,9 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 Preview preview = new Preview.Builder().build();
-                preview.setSurfaceProvider(findViewById(R.id.viewFinder).getSurfaceProvider());
+                
+                // Fixed the casting error here
+                preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
 
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -63,13 +69,18 @@ public class MainActivity extends AppCompatActivity {
 
                 imageAnalysis.setAnalyzer(cameraExecutor, imageProxy -> {
                     @SuppressWarnings("UnsafeOptInUsageError")
-                    InputImage image = InputImage.fromMediaImage(imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
-                    textRecognizer.process(image)
-                        .addOnSuccessListener(visionText -> {
-                            String text = visionText.getText();
-                            if (!text.isEmpty()) identifyAndTranslate(text);
-                        })
-                        .addOnCompleteListener(task -> imageProxy.close());
+                    android.media.Image mediaImage = imageProxy.getImage();
+                    if (mediaImage != null) {
+                        InputImage image = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
+                        textRecognizer.process(image)
+                            .addOnSuccessListener(visionText -> {
+                                String text = visionText.getText();
+                                if (!text.isEmpty()) identifyAndTranslate(text);
+                            })
+                            .addOnCompleteListener(task -> imageProxy.close());
+                    } else {
+                        imageProxy.close();
+                    }
                 });
 
                 cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalysis);
@@ -97,5 +108,11 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean allPermissionsGranted() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cameraExecutor.shutdown();
     }
 }
