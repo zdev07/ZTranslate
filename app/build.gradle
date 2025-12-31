@@ -6,6 +6,19 @@ android {
     namespace 'zx.offical.translate'
     compileSdk 34
 
+    sourceSets {
+        main {
+            // We tell Gradle: "I don't care what you think, the file is HERE"
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+        }
+    }
+    
+    // ... rest of your defaultConfig and dependencies
+}
+
+
     defaultConfig {
         applicationId "zx.offical.translate"
         minSdk 24
