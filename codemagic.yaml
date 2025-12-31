@@ -8,11 +8,11 @@ workflows:
     triggering:
       events:
         - push
-    scripts:
+        scripts:
       - name: Build Android APK
         script: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          # Use system gradle instead of the missing wrapper
+          gradle assembleDebug
       - name: Generate Wrapper and Build
         script: |
           gradle wrapper --gradle-version 8.1.1
