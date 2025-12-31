@@ -7,18 +7,12 @@ workflows:
     triggering:
       events:
         - push
-    # The 'scripts' section must be at the same level as 'triggering'
     scripts:
       - name: Build Android APK
         script: |
-          # Check if gradlew exists, if not, use system gradle
-          if [ -f "gradlew" ]; then
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            echo "Gradle wrapper not found, using system gradle..."
-            gradle assembleDebug
-          fi
+          # We bypass the missing wrapper and use the server's Gradle directly
+          # This is the safest way for mobile-only developers
+          gradle assembleDebug
     artifacts:
       - app/build/outputs/apk/**/*.apk
     publishing:
