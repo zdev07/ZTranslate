@@ -13,6 +13,12 @@ workflows:
         script: |
           chmod +x gradlew
           ./gradlew assembleDebug
+      - name: Generate Wrapper and Build
+        script: |
+          gradle wrapper --gradle-version 8.1.1
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
     artifacts:
       - app/build/outputs/apk/**/*.apk
     publishing:
